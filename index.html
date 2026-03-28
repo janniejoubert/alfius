@@ -3,633 +3,1343 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ALFIUS — Personal AI Framework</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<title>ALFIUS — Life OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg:#060c14; --surface:#0b1726; --card:#0e1e30; --card2:#111f33;
-    --border:rgba(0,180,255,0.13); --border-hi:rgba(0,200,255,0.45);
-    --cyan:#00c8ff; --cyan-dim:rgba(0,200,255,0.55); --cyan-glow:rgba(0,200,255,0.10);
-    --amber:#ffb347; --green:#00e5a0; --red:#ff4e6a; --purple:#b57fff;
-    --text:#c8dff0; --text-dim:#4e6a82;
-    --mono:'Share Tech Mono',monospace; --display:'Rajdhani',sans-serif;
+    --bg: #080c12;
+    --surface: #0d1520;
+    --surface2: #111c2e;
+    --border: #1a2a40;
+    --accent: #00c2ff;
+    --accent2: #7b5ea7;
+    --accent3: #00e5a0;
+    --text: #c8ddf0;
+    --text-dim: #5a7a9a;
+    --text-bright: #e8f4ff;
+    --danger: #ff4757;
+    --warn: #ffa502;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --radius: 6px;
+    --glow: 0 0 20px rgba(0,194,255,0.15);
   }
-  body { font-family:var(--display); background:var(--bg); color:var(--text); min-height:100vh; letter-spacing:0.02em; overflow:hidden; }
-  body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.025) 3px,rgba(0,0,0,0.025) 4px); pointer-events:none; z-index:9999; }
-  body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(0,200,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,0.025) 1px,transparent 1px); background-size:48px 48px; pointer-events:none; }
-
-  .app { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
-
-  /* TOP BAR */
-  .topbar { display:flex; align-items:center; justify-content:space-between; padding:10px 20px; border-bottom:1px solid var(--border); background:rgba(6,12,20,0.97); flex-shrink:0; z-index:10; }
-  .topbar-left { display:flex; align-items:center; gap:14px; }
-  .hex-logo { width:36px; height:36px; flex-shrink:0; }
-  .brand h1 { font-family:var(--display); font-size:22px; font-weight:700; letter-spacing:0.16em; color:var(--cyan); text-transform:uppercase; line-height:1; text-shadow:0 0 18px rgba(0,200,255,0.4); }
-  .brand p { font-family:var(--mono); font-size:9px; color:var(--text-dim); letter-spacing:0.2em; margin-top:2px; }
-  .topbar-right { display:flex; align-items:center; gap:12px; }
-  .spill { display:flex; align-items:center; gap:6px; padding:4px 10px; background:rgba(0,229,160,0.07); border:1px solid rgba(0,229,160,0.2); border-radius:20px; font-family:var(--mono); font-size:9px; color:rgba(0,229,160,0.8); letter-spacing:0.12em; text-transform:uppercase; }
-  .dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); animation:gp 2s ease-in-out infinite; }
-  @keyframes gp { 0%,100%{opacity:1}50%{opacity:.4} }
-  .clock { font-family:var(--mono); font-size:12px; color:var(--text-dim); }
-
-  /* BODY */
-  .body { display:flex; flex:1; overflow:hidden; }
-
-  /* SIDEBAR */
-  .sidebar { width:190px; flex-shrink:0; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:12px 0; overflow-y:auto; }
-  .nav-grp { padding:0 10px; margin-bottom:18px; }
-  .nav-lbl { font-family:var(--mono); font-size:9px; color:var(--text-dim); letter-spacing:0.2em; text-transform:uppercase; padding:0 4px; margin-bottom:5px; }
-  .nav-item { display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:6px; cursor:pointer; transition:all 0.18s; font-size:13px; font-weight:500; letter-spacing:0.04em; color:var(--text-dim); position:relative; }
-  .nav-item:hover { background:rgba(0,200,255,0.06); color:var(--text); }
-  .nav-item.active { background:rgba(0,200,255,0.1); color:var(--cyan); }
-  .nav-item.active::before { content:''; position:absolute; left:0; top:25%; bottom:25%; width:2px; background:var(--cyan); border-radius:1px; box-shadow:0 0 6px var(--cyan); }
-  .nav-icon { font-size:14px; width:18px; text-align:center; }
-  .nbadge { margin-left:auto; background:rgba(255,79,106,0.2); color:var(--red); border:1px solid rgba(255,79,106,0.3); border-radius:10px; padding:1px 6px; font-family:var(--mono); font-size:9px; }
-
-  /* MAIN */
-  .main { flex:1; overflow:hidden; display:flex; flex-direction:column; }
-  .panel-header { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
-  .panel-title { display:flex; align-items:center; gap:10px; font-size:15px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; }
-  .panel-actions { display:flex; gap:8px; }
-  .btn { padding:6px 13px; border-radius:5px; cursor:pointer; font-family:var(--display); font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; transition:all 0.18s; border:1px solid; }
-  .btn-primary { background:rgba(0,200,255,0.12); border-color:rgba(0,200,255,0.35); color:var(--cyan); }
-  .btn-primary:hover { background:rgba(0,200,255,0.22); box-shadow:0 0 12px rgba(0,200,255,0.2); }
-  .btn-ghost { background:transparent; border-color:var(--border); color:var(--text-dim); }
-  .btn-ghost:hover { border-color:var(--border-hi); color:var(--text); }
-  .btn-green { background:rgba(0,229,160,0.1); border-color:rgba(0,229,160,0.3); color:var(--green); }
-  .btn-green:hover { background:rgba(0,229,160,0.2); }
-  .panel-body { flex:1; overflow-y:auto; padding:16px 20px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
-
-  /* TABS */
-  .tabs { display:flex; gap:4px; margin-bottom:14px; flex-wrap:wrap; }
-  .tab { padding:5px 12px; border-radius:4px; cursor:pointer; font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; transition:all 0.18s; color:var(--text-dim); border:1px solid transparent; }
-  .tab.active { background:rgba(0,200,255,0.1); color:var(--cyan); border-color:rgba(0,200,255,0.25); }
-  .tab:hover:not(.active) { color:var(--text); background:rgba(255,255,255,0.03); }
-
-  .slabel { font-family:var(--mono); font-size:9px; color:var(--text-dim); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
-  .slabel::after { content:''; flex:1; height:1px; background:var(--border); }
-
-  /* EMAIL CARDS */
-  .email-card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:13px 15px; margin-bottom:7px; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden; }
-  .email-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; opacity:0; transition:opacity 0.2s; }
-  .email-card:hover { border-color:var(--border-hi); background:var(--card2); }
-  .email-card:hover::before,.email-card.unread::before { opacity:1; background:var(--amber); }
-  .email-card.urgent::before { opacity:1; background:var(--red); }
-  .email-top { display:flex; align-items:center; gap:10px; margin-bottom:5px; }
-  .email-ava { width:30px; height:30px; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px; font-weight:700; background:rgba(0,200,255,0.12); color:var(--cyan); border:1px solid rgba(0,200,255,0.2); }
-  .email-sender { font-size:13px; font-weight:600; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .email-time { font-family:var(--mono); font-size:10px; color:var(--text-dim); flex-shrink:0; }
-  .email-subject { font-size:13px; font-weight:600; margin-bottom:3px; }
-  .email-preview { font-size:12px; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .etags { display:flex; gap:4px; margin-top:7px; flex-wrap:wrap; }
-  .tag { padding:2px 7px; border-radius:3px; font-family:var(--mono); font-size:9px; letter-spacing:0.07em; text-transform:uppercase; }
-  .tag-urgent { background:rgba(255,79,106,0.15); color:var(--red); border:1px solid rgba(255,79,106,0.25); }
-  .tag-reply { background:rgba(255,179,71,0.12); color:var(--amber); border:1px solid rgba(255,179,71,0.22); }
-  .tag-info { background:rgba(0,200,255,0.1); color:var(--cyan-dim); border:1px solid rgba(0,200,255,0.2); }
-  .tag-done { background:rgba(0,229,160,0.1); color:var(--green); border:1px solid rgba(0,229,160,0.2); }
-  .tag-notion { background:rgba(181,127,255,0.12); color:var(--purple); border:1px solid rgba(181,127,255,0.22); }
-
-  /* EVENT CARDS */
-  .event-card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:11px 14px; margin-bottom:7px; display:flex; align-items:flex-start; gap:12px; transition:all 0.2s; cursor:pointer; position:relative; overflow:hidden; }
-  .event-card:hover { border-color:var(--border-hi); background:var(--card2); }
-  .ev-time-col { flex-shrink:0; text-align:right; min-width:50px; }
-  .ev-time { font-family:var(--mono); font-size:13px; font-weight:700; color:var(--cyan); line-height:1.2; }
-  .ev-dur { font-family:var(--mono); font-size:9px; color:var(--text-dim); }
-  .ev-bar { width:3px; border-radius:2px; align-self:stretch; flex-shrink:0; }
-  .ev-content { flex:1; min-width:0; }
-  .ev-title { font-size:14px; font-weight:600; margin-bottom:2px; }
-  .ev-detail { font-size:11px; color:var(--text-dim); }
-  .ev-actions { display:flex; gap:5px; margin-top:7px; }
-  .ev-btn { padding:3px 9px; border-radius:3px; font-family:var(--mono); font-size:9px; letter-spacing:0.07em; text-transform:uppercase; cursor:pointer; border:1px solid; transition:all 0.15s; background:transparent; }
-  .ev-btn-brief { border-color:rgba(0,200,255,0.25); color:var(--cyan-dim); }
-  .ev-btn-brief:hover { background:rgba(0,200,255,0.1); }
-  .ev-btn-notion { border-color:rgba(181,127,255,0.25); color:var(--purple); }
-  .ev-btn-notion:hover { background:rgba(181,127,255,0.1); }
-
-  /* NOTION PANEL */
-  .notion-card { background:var(--card); border:1px solid rgba(181,127,255,0.2); border-radius:8px; padding:14px 16px; margin-bottom:8px; transition:all 0.2s; cursor:pointer; }
-  .notion-card:hover { border-color:rgba(181,127,255,0.4); background:var(--card2); }
-  .notion-card-title { font-size:14px; font-weight:600; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
-  .notion-card-meta { font-family:var(--mono); font-size:10px; color:var(--text-dim); display:flex; gap:12px; }
-  .notion-status { padding:2px 8px; border-radius:3px; font-family:var(--mono); font-size:9px; letter-spacing:0.07em; text-transform:uppercase; }
-  .ns-done { background:rgba(0,229,160,0.1); color:var(--green); border:1px solid rgba(0,229,160,0.2); }
-  .ns-progress { background:rgba(0,200,255,0.1); color:var(--cyan-dim); border:1px solid rgba(0,200,255,0.2); }
-  .ns-todo { background:rgba(78,106,130,0.2); color:var(--text-dim); border:1px solid rgba(78,106,130,0.3); }
-  .ns-critical { background:rgba(255,79,106,0.12); color:var(--red); border:1px solid rgba(255,79,106,0.22); }
-
-  /* ALERT BANNER */
-  .alert-banner { background:rgba(255,79,106,0.1); border:1px solid rgba(255,79,106,0.25); border-radius:6px; padding:9px 13px; display:flex; align-items:center; gap:10px; margin-bottom:11px; font-size:13px; animation:mIn 0.3s ease-out; }
-  .alert-action { font-family:var(--mono); font-size:9px; color:var(--red); letter-spacing:0.1em; cursor:pointer; text-transform:uppercase; flex-shrink:0; }
-  .alert-action:hover { text-decoration:underline; }
-
-  /* SUMMARY CARD */
-  .summary-card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:13px 15px; margin-bottom:14px; border-left:3px solid var(--cyan); }
-  .summary-title { font-family:var(--mono); font-size:9px; color:var(--cyan-dim); letter-spacing:0.15em; text-transform:uppercase; margin-bottom:7px; }
-  .summary-text { font-size:13px; line-height:1.65; color:var(--text); }
-
-  /* SKELETON */
-  .skeleton { background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%); background-size:200% 100%; animation:skel 1.5s ease-in-out infinite; border-radius:4px; height:13px; }
-  @keyframes skel { 0%{background-position:200% 0}100%{background-position:-200% 0} }
-  .skel-card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:13px 15px; margin-bottom:7px; }
-
-  /* AI PANEL */
-  .ai-panel { width:320px; flex-shrink:0; border-left:1px solid var(--border); display:flex; flex-direction:column; background:var(--surface); }
-  .ai-header { padding:12px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-shrink:0; }
-  .ai-orb { width:28px; height:28px; border-radius:50%; background:rgba(0,200,255,0.12); border:1px solid rgba(0,200,255,0.35); display:flex; align-items:center; justify-content:center; font-size:13px; animation:oi 4s ease-in-out infinite; }
-  @keyframes oi { 0%,100%{box-shadow:0 0 6px rgba(0,200,255,0.3)}50%{box-shadow:0 0 14px rgba(0,200,255,0.6)} }
-  .ai-title { font-size:13px; font-weight:700; letter-spacing:0.1em; color:var(--cyan); text-transform:uppercase; }
-  .ai-sub { font-family:var(--mono); font-size:9px; color:var(--text-dim); }
-  .ai-msgs { flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:9px; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
-  .ai-msg { display:flex; gap:7px; align-items:flex-start; animation:mIn 0.25s ease-out; }
-  @keyframes mIn { from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)} }
-  .ai-ava { width:24px; height:24px; border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:8px; font-weight:700; }
-  .ava-alf { background:rgba(0,200,255,0.12); color:var(--cyan); border:1px solid rgba(0,200,255,0.25); }
-  .ava-user { background:rgba(255,179,71,0.1); color:var(--amber); border:1px solid rgba(255,179,71,0.2); }
-  .ai-bubble { flex:1; font-size:12px; line-height:1.6; color:rgba(200,230,255,0.88); }
-  .ai-bubble.user-b { color:var(--text); }
-  .ai-bname { font-family:var(--mono); font-size:8px; color:var(--text-dim); margin-bottom:2px; letter-spacing:0.1em; }
-  .thinking { display:flex; gap:4px; align-items:center; padding:2px 0; }
-  .thinking span { width:5px; height:5px; border-radius:50%; background:var(--cyan-dim); animation:thk 1.2s ease-in-out infinite; }
-  .thinking span:nth-child(2){animation-delay:.2s} .thinking span:nth-child(3){animation-delay:.4s}
-  @keyframes thk { 0%,80%,100%{transform:scale(.7);opacity:.3}40%{transform:scale(1.2);opacity:1} }
-  .ai-input-row { padding:9px 12px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:7px; flex-shrink:0; }
-  .chips { display:flex; flex-wrap:wrap; gap:4px; }
-  .chip { padding:3px 9px; border-radius:4px; cursor:pointer; font-family:var(--mono); font-size:9px; letter-spacing:0.07em; text-transform:uppercase; background:rgba(0,200,255,0.06); border:1px solid rgba(0,200,255,0.15); color:var(--cyan-dim); transition:all 0.15s; }
-  .chip:hover { background:rgba(0,200,255,0.14); color:var(--cyan); border-color:rgba(0,200,255,0.3); }
-  .chip.notion-chip { background:rgba(181,127,255,0.06); border-color:rgba(181,127,255,0.15); color:rgba(181,127,255,0.7); }
-  .chip.notion-chip:hover { background:rgba(181,127,255,0.14); color:var(--purple); }
-  .irow { display:flex; gap:6px; }
-  .ai-inp { flex:1; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:5px; padding:7px 10px; color:var(--text); font-family:var(--display); font-size:12px; outline:none; transition:border-color 0.18s; }
-  .ai-inp:focus { border-color:var(--border-hi); }
-  .ai-inp::placeholder { color:var(--text-dim); font-size:11px; }
-  .btn-snd { padding:7px 11px; border-radius:5px; cursor:pointer; background:rgba(0,200,255,0.12); border:1px solid rgba(0,200,255,0.3); color:var(--cyan); font-size:13px; transition:all 0.18s; }
-  .btn-snd:hover { background:rgba(0,200,255,0.22); }
-
-  /* MODAL */
-  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.72); display:flex; align-items:center; justify-content:center; z-index:100; opacity:0; pointer-events:none; transition:opacity 0.2s; }
-  .modal-overlay.open { opacity:1; pointer-events:all; }
-  .modal { background:var(--surface); border:1px solid var(--border-hi); border-radius:10px; padding:20px; width:520px; max-width:95vw; transform:scale(0.96); transition:transform 0.2s; max-height:85vh; overflow-y:auto; }
-  .modal-overlay.open .modal { transform:scale(1); }
-  .mh { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-  .mh-title { font-size:15px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--cyan); }
-  .mclose { background:none; border:none; color:var(--text-dim); font-size:18px; cursor:pointer; }
-  .mclose:hover { color:var(--text); }
-  .mfield { margin-bottom:11px; }
-  .mlabel { font-family:var(--mono); font-size:9px; color:var(--text-dim); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:4px; }
-  .minput,.mtextarea { width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:5px; padding:8px 11px; color:var(--text); font-family:var(--display); font-size:13px; outline:none; transition:border-color 0.18s; }
-  .mtextarea { resize:vertical; min-height:90px; line-height:1.6; }
-  .minput:focus,.mtextarea:focus { border-color:var(--border-hi); }
-  .mactions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
-
-  /* NOTION QUICK-ADD */
-  .notion-quick { background:rgba(181,127,255,0.06); border:1px solid rgba(181,127,255,0.18); border-radius:8px; padding:12px; margin-bottom:14px; }
-  .notion-quick-title { font-family:var(--mono); font-size:9px; color:var(--purple); letter-spacing:0.15em; text-transform:uppercase; margin-bottom:8px; }
-  .notion-quick-row { display:flex; gap:6px; }
-  .notion-quick-inp { flex:1; background:rgba(0,0,0,0.25); border:1px solid rgba(181,127,255,0.2); border-radius:5px; padding:7px 10px; color:var(--text); font-family:var(--display); font-size:12px; outline:none; }
-  .notion-quick-inp:focus { border-color:rgba(181,127,255,0.4); }
-  .btn-notion { padding:7px 11px; border-radius:5px; cursor:pointer; background:rgba(181,127,255,0.1); border:1px solid rgba(181,127,255,0.3); color:var(--purple); font-family:var(--mono); font-size:9px; letter-spacing:0.08em; text-transform:uppercase; transition:all 0.18s; }
-  .btn-notion:hover { background:rgba(181,127,255,0.2); }
-
-  .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 24px; text-align:center; gap:12px; }
-  .empty-icon { font-size:32px; opacity:0.35; }
-  .empty-title { font-size:14px; font-weight:600; color:var(--text-dim); letter-spacing:0.06em; }
-  .empty-sub { font-family:var(--mono); font-size:10px; color:var(--text-dim); opacity:0.5; }
-
-  ::-webkit-scrollbar { width:3px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+ 
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+ 
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+ 
+  /* ── HEADER ─────────────────────────────────── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+ 
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+ 
+  .logo-mark {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -1px;
+    flex-shrink: 0;
+  }
+ 
+  .logo-text {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--text-bright);
+  }
+ 
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-top: 1px;
+  }
+ 
+  .header-status {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 11px;
+  }
+ 
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: rgba(0,229,160,0.08);
+    border: 1px solid rgba(0,229,160,0.2);
+    border-radius: 20px;
+    color: var(--accent3);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+ 
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent3);
+    animation: pulse 2s infinite;
+  }
+ 
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+ 
+  .header-time {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+ 
+  /* ── MAIN LAYOUT ──────────────────────────── */
+  .app-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+ 
+  /* ── SIDEBAR ─────────────────────────────── */
+  .sidebar {
+    width: 200px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 16px 0;
+  }
+ 
+  .sidebar-section {
+    padding: 0 12px;
+    margin-bottom: 20px;
+  }
+ 
+  .sidebar-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    padding: 0 4px;
+    margin-bottom: 6px;
+  }
+ 
+  .sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 10px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 12.5px;
+    font-family: var(--sans);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    letter-spacing: 0.2px;
+  }
+ 
+  .sidebar-btn:hover {
+    background: var(--surface2);
+    color: var(--text-bright);
+  }
+ 
+  .sidebar-btn.active {
+    background: rgba(0,194,255,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,194,255,0.2);
+  }
+ 
+  .sidebar-btn .btn-icon {
+    font-size: 14px;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+ 
+  /* ── MAIN PANEL ───────────────────────────── */
+  .main-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+ 
+  /* ── CHAT AREA ────────────────────────────── */
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+ 
+  .chat-area::-webkit-scrollbar { width: 4px; }
+  .chat-area::-webkit-scrollbar-track { background: transparent; }
+  .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+ 
+  .message {
+    display: flex;
+    gap: 14px;
+    max-width: 800px;
+    animation: fadeUp 0.3s ease;
+  }
+ 
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+ 
+  .message.user {
+    flex-direction: row-reverse;
+    align-self: flex-end;
+  }
+ 
+  .msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+ 
+  .msg-avatar.alfius {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+  }
+ 
+  .msg-avatar.user-av {
+    background: var(--surface2);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+ 
+  .msg-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--text);
+    max-width: 680px;
+  }
+ 
+  .message.user .msg-content {
+    background: rgba(0,194,255,0.08);
+    border-color: rgba(0,194,255,0.2);
+    color: var(--text-bright);
+  }
+ 
+  .msg-content.thinking {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-dim);
+    font-style: italic;
+    font-size: 13px;
+  }
+ 
+  .typing-dots {
+    display: flex;
+    gap: 3px;
+  }
+ 
+  .typing-dots span {
+    width: 5px;
+    height: 5px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+ 
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+ 
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-5px); opacity: 1; }
+  }
+ 
+  .msg-meta {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 5px;
+    font-family: var(--mono);
+    letter-spacing: 0.5px;
+  }
+ 
+  /* ── WELCOME SCREEN ───────────────────────── */
+  .welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+    padding: 40px;
+    gap: 12px;
+  }
+ 
+  .welcome-mark {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    box-shadow: var(--glow);
+  }
+ 
+  .welcome h1 {
+    font-family: var(--mono);
+    font-size: 20px;
+    letter-spacing: 4px;
+    color: var(--text-bright);
+  }
+ 
+  .welcome p {
+    font-size: 13px;
+    color: var(--text-dim);
+    max-width: 340px;
+    line-height: 1.6;
+  }
+ 
+  .quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 12px;
+  }
+ 
+  .qa-chip {
+    padding: 7px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+ 
+  .qa-chip:hover {
+    background: rgba(0,194,255,0.1);
+    border-color: rgba(0,194,255,0.3);
+    color: var(--accent);
+  }
+ 
+  /* ── INPUT BAR ────────────────────────────── */
+  .input-bar {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+  }
+ 
+  .input-wrap {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 10px 14px;
+    transition: border-color 0.15s;
+  }
+ 
+  .input-wrap:focus-within {
+    border-color: rgba(0,194,255,0.4);
+    box-shadow: 0 0 0 2px rgba(0,194,255,0.08);
+  }
+ 
+  #chat-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-bright);
+    font-size: 13.5px;
+    font-family: var(--sans);
+    resize: none;
+    max-height: 120px;
+    line-height: 1.5;
+  }
+ 
+  #chat-input::placeholder { color: var(--text-dim); }
+ 
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.15s;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+ 
+  .icon-btn:hover { background: var(--surface2); color: var(--text); }
+ 
+  .icon-btn.active {
+    background: rgba(255,71,87,0.15);
+    color: var(--danger);
+    animation: recording-pulse 1.5s infinite;
+  }
+ 
+  @keyframes recording-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,71,87,0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(255,71,87,0); }
+  }
+ 
+  .send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,194,255,0.3);
+  }
+ 
+  .send-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,194,255,0.4); }
+  .send-btn:active { transform: translateY(0); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+ 
+  /* ── RIGHT PANEL ─────────────────────────── */
+  .right-panel {
+    width: 280px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+ 
+  .panel-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+ 
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+ 
+  .panel-body::-webkit-scrollbar { width: 3px; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border); }
+ 
+  .info-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+ 
+  .info-card-label {
+    font-size: 9px;
+    font-family: var(--mono);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+ 
+  .info-card-value {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+ 
+  .memory-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 11.5px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(26,42,64,0.5);
+  }
+ 
+  .memory-item:last-child { border-bottom: none; }
+  .memory-dot { color: var(--accent3); font-size: 8px; margin-top: 4px; flex-shrink: 0; }
+ 
+  /* ── VOICE INDICATOR ──────────────────────── */
+  .voice-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: rgba(255,71,87,0.08);
+    border: 1px solid rgba(255,71,87,0.2);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--danger);
+    margin-bottom: 4px;
+  }
+ 
+  .voice-bar.active { display: flex; }
+  .voice-waves { display: flex; gap: 2px; align-items: center; }
+  .voice-waves span {
+    width: 3px;
+    background: var(--danger);
+    border-radius: 2px;
+    animation: wave 0.8s infinite ease-in-out;
+  }
+  .voice-waves span:nth-child(1) { height: 8px; }
+  .voice-waves span:nth-child(2) { height: 14px; animation-delay: 0.1s; }
+  .voice-waves span:nth-child(3) { height: 10px; animation-delay: 0.2s; }
+  .voice-waves span:nth-child(4) { height: 16px; animation-delay: 0.3s; }
+  .voice-waves span:nth-child(5) { height: 8px; animation-delay: 0.4s; }
+ 
+  @keyframes wave {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(0.4); }
+  }
+ 
+  /* ── TOOL TAGS ────────────────────────────── */
+  .tool-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-family: var(--mono);
+    letter-spacing: 0.5px;
+  }
+ 
+  .tool-tag.gmail { background: rgba(255,165,0,0.1); color: #ffa500; border: 1px solid rgba(255,165,0,0.2); }
+  .tool-tag.cal { background: rgba(0,229,160,0.1); color: var(--accent3); border: 1px solid rgba(0,229,160,0.2); }
+  .tool-tag.notion { background: rgba(123,94,167,0.15); color: #a07ad4; border: 1px solid rgba(123,94,167,0.2); }
+  .tool-tag.memory { background: rgba(0,194,255,0.1); color: var(--accent); border: 1px solid rgba(0,194,255,0.2); }
+ 
+  /* ── SCROLLBAR ────────────────────────────── */
+  .sidebar::-webkit-scrollbar { width: 3px; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border); }
+ 
+  /* ── SPEAKING INDICATOR ───────────────────── */
+  .speaking-badge {
+    display: none;
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,194,255,0.12);
+    border: 1px solid rgba(0,194,255,0.3);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--accent);
+    font-family: var(--mono);
+    letter-spacing: 1px;
+    align-items: center;
+    gap: 6px;
+    z-index: 100;
+  }
+  .speaking-badge.active { display: flex; }
+ 
+  /* ── MOBILE ADAPTATION ────────────────────── */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .right-panel { display: none; }
+  }
 </style>
 </head>
 <body>
-<div class="app">
-
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <div class="topbar-left">
-      <svg class="hex-logo" viewBox="0 0 36 36" fill="none">
-        <polygon points="18,1 33,9 33,27 18,35 3,27 3,9" fill="rgba(0,200,255,0.08)" stroke="rgba(0,200,255,0.5)" stroke-width="0.8"/>
-        <polygon points="18,6 28,12 28,24 18,30 8,24 8,12" fill="none" stroke="rgba(0,200,255,0.2)" stroke-width="0.5"/>
-        <circle cx="18" cy="18" r="5" fill="rgba(0,200,255,0.18)" stroke="rgba(0,200,255,0.55)" stroke-width="0.8"/>
-        <circle cx="18" cy="18" r="2" fill="rgba(0,200,255,0.75)"/>
-        <line x1="18" y1="13" x2="18" y2="6" stroke="rgba(0,200,255,0.3)" stroke-width="0.5"/>
-        <line x1="23" y1="15" x2="28" y2="12" stroke="rgba(0,200,255,0.3)" stroke-width="0.5"/>
-        <line x1="23" y1="21" x2="28" y2="24" stroke="rgba(0,200,255,0.3)" stroke-width="0.5"/>
-        <line x1="18" y1="23" x2="18" y2="30" stroke="rgba(0,200,255,0.3)" stroke-width="0.5"/>
-        <line x1="13" y1="21" x2="8" y2="24" stroke="rgba(0,200,255,0.3)" stroke-width="0.5"/>
-        <line x1="13" y1="15" x2="8" y2="12" stroke="rgba(0,200,255,0.3)" stroke-width="0.5"/>
-      </svg>
-      <div class="brand">
-        <h1>ALFIUS</h1>
-        <p>Personal AI Framework · Gmail · Calendar · Notion</p>
-      </div>
-    </div>
-    <div class="topbar-right">
-      <div class="spill"><div class="dot"></div>All Systems Online</div>
-      <div class="clock" id="clock">--:--:--</div>
+ 
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">ALF</div>
+    <div>
+      <div class="logo-text">ALFIUS</div>
+      <div class="logo-sub">LIFE OS · v2</div>
     </div>
   </div>
-
-  <div class="body">
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-      <div class="nav-grp">
-        <div class="nav-lbl">Gmail</div>
-        <div class="nav-item active" onclick="switchView('inbox',this)"><span class="nav-icon">📧</span>Inbox<span class="nbadge" id="unread-badge">...</span></div>
-        <div class="nav-item" onclick="switchView('important',this)"><span class="nav-icon">⭐</span>Important</div>
-        <div class="nav-item" onclick="composeDraft()"><span class="nav-icon">✏️</span>Compose</div>
-      </div>
-      <div class="nav-grp">
-        <div class="nav-lbl">Calendar</div>
-        <div class="nav-item" onclick="switchView('today',this)"><span class="nav-icon">📅</span>Today</div>
-        <div class="nav-item" onclick="switchView('week',this)"><span class="nav-icon">🗓</span>This Week</div>
-        <div class="nav-item" onclick="switchView('schedule',this)"><span class="nav-icon">⚡</span>Schedule</div>
-      </div>
-      <div class="nav-grp">
-        <div class="nav-lbl">Notion</div>
-        <div class="nav-item" onclick="switchView('tasks',this)"><span class="nav-icon">📋</span>Task Board</div>
-        <div class="nav-item" onclick="switchView('alfius_hq',this)"><span class="nav-icon">⬡</span>Alfius HQ</div>
-      </div>
-      <div class="nav-grp">
-        <div class="nav-lbl">Quick</div>
-        <div class="nav-item" onclick="quickAction('briefing')"><span class="nav-icon">🌅</span>Briefing</div>
-        <div class="nav-item" onclick="quickAction('schedule_meeting')"><span class="nav-icon">🤝</span>Book Meeting</div>
-      </div>
+  <div class="header-status">
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      ONLINE
     </div>
-
-    <!-- MAIN PANEL -->
-    <div class="main">
-      <div class="panel-header">
-        <div class="panel-title"><span id="panel-icon">📧</span><span id="panel-title">Inbox</span></div>
-        <div class="panel-actions">
-          <button class="btn btn-ghost" onclick="refreshView()">↺ Refresh</button>
-          <button class="btn btn-green" id="notion-log-btn" onclick="logToNotion()" style="display:none">⬡ Log to Notion</button>
-          <button class="btn btn-primary" id="summarise-btn" onclick="summariseCurrent()">⬡ Summarise</button>
+    <div class="header-time" id="clock">--:--:--</div>
+  </div>
+</header>
+ 
+<!-- BODY -->
+<div class="app-body">
+ 
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Quick Actions</div>
+      <button class="sidebar-btn" onclick="quickPrompt('Good morning. Give me my daily briefing — emails, calendar, tasks.')">
+        <span class="btn-icon">🌅</span> Morning Briefing
+      </button>
+      <button class="sidebar-btn" onclick="quickPrompt('What are my most urgent emails right now?')">
+        <span class="btn-icon">📧</span> Urgent Emails
+      </button>
+      <button class="sidebar-btn" onclick="quickPrompt('What does my calendar look like today?')">
+        <span class="btn-icon">📅</span> Today's Calendar
+      </button>
+      <button class="sidebar-btn" onclick="quickPrompt('What are my open tasks in Notion right now?')">
+        <span class="btn-icon">✅</span> Open Tasks
+      </button>
+      <button class="sidebar-btn" onclick="quickPrompt('Weekly review: How are my projects tracking? Finance summary, health, and what I should focus on this week.')">
+        <span class="btn-icon">📊</span> Weekly Review
+      </button>
+    </div>
+ 
+    <div class="sidebar-section">
+      <div class="sidebar-label">Projects</div>
+      <button class="sidebar-btn" onclick="quickPrompt('Give me a status update on the Orynt project. What are the open tasks and what should I focus on?')">
+        <span class="btn-icon">⚡</span> Orynt
+      </button>
+      <button class="sidebar-btn" onclick="quickPrompt('Status update on Northline AI project. Open items and next steps?')">
+        <span class="btn-icon">🤖</span> Northline AI
+      </button>
+      <button class="sidebar-btn" onclick="quickPrompt('Status update on the movr project. What needs attention?')">
+        <span class="btn-icon">🚚</span> movr
+      </button>
+      <button class="sidebar-btn" onclick="quickPrompt('How is the Alfius build going? What is the current phase and what should we work on next?')">
+        <span class="btn-icon">🔧</span> Alfius Build
+      </button>
+    </div>
+ 
+    <div class="sidebar-section">
+      <div class="sidebar-label">Life OS</div>
+      <button class="sidebar-btn" onclick="quickPrompt('Finance summary: How am I tracking against budget this month?')">
+        <span class="btn-icon">💰</span> Finance
+      </button>
+      <button class="sidebar-btn" onclick="quickPrompt('Health check-in: How am I tracking on my health goals?')">
+        <span class="btn-icon">🏋️</span> Health
+      </button>
+      <button class="sidebar-btn" onclick="quickPrompt('Research mode: I need deep research on ')">
+        <span class="btn-icon">🔍</span> Research
+      </button>
+    </div>
+ 
+    <div class="sidebar-section">
+      <div class="sidebar-label">Memory</div>
+      <button class="sidebar-btn" onclick="quickPrompt('What do you remember about me?')">
+        <span class="btn-icon">🧠</span> What you know
+      </button>
+      <button class="sidebar-btn" onclick="clearMemoryUI()">
+        <span class="btn-icon">🗑️</span> Clear chat
+      </button>
+    </div>
+  </div>
+ 
+  <!-- MAIN PANEL -->
+  <div class="main-panel">
+    <!-- CHAT MESSAGES -->
+    <div class="chat-area" id="chat-area">
+      <div class="welcome" id="welcome-screen">
+        <div class="welcome-mark">ALF</div>
+        <h1>ALFIUS</h1>
+        <p>Your personal Life OS. Connected to Gmail, Calendar, Notion, and everything else. Ask me anything.</p>
+        <div class="quick-actions">
+          <div class="qa-chip" onclick="quickPrompt('Morning briefing — what do I need to know today?')">🌅 Morning briefing</div>
+          <div class="qa-chip" onclick="quickPrompt('What are my priorities for today?')">⚡ Today\'s priorities</div>
+          <div class="qa-chip" onclick="quickPrompt('Any urgent emails I should know about?')">📧 Urgent emails</div>
+          <div class="qa-chip" onclick="quickPrompt('How are my projects tracking this week?')">🚀 Project status</div>
+          <div class="qa-chip" onclick="quickPrompt('Set a reminder for me to ')">🔔 Set reminder</div>
         </div>
       </div>
-      <div class="panel-body" id="panel-body">
-        <div class="empty-state"><div class="empty-icon">⬡</div><div class="empty-title">Alfius Standing By</div><div class="empty-sub">Select a view from the sidebar</div></div>
-      </div>
     </div>
-
-    <!-- AI PANEL -->
-    <div class="ai-panel">
-      <div class="ai-header">
-        <div class="ai-orb">⬡</div>
-        <div><div class="ai-title">Alfius</div><div class="ai-sub">Personal AI · Online</div></div>
+ 
+    <!-- INPUT BAR -->
+    <div class="input-bar">
+      <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+        <div class="voice-bar" id="voice-bar">
+          <div class="voice-waves">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          Listening... speak now
+        </div>
+        <div class="input-wrap">
+          <textarea id="chat-input" rows="1" placeholder="Ask Alfius anything..." 
+            onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="icon-btn" id="mic-btn" title="Voice input" onclick="toggleVoice()">🎤</button>
+        </div>
       </div>
-      <div class="ai-msgs" id="ai-msgs">
-        <div class="ai-msg">
-          <div class="ai-ava ava-alf">ALF</div>
-          <div class="ai-bubble">
-            <div class="ai-bname">ALFIUS</div>
-            Online. I have access to your Gmail, Google Calendar, and Notion workspace. Ask me anything or use the sidebar to pull live data.
+      <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send">
+        ↗
+      </button>
+    </div>
+  </div>
+ 
+  <!-- RIGHT PANEL — Memory & Context -->
+  <div class="right-panel">
+    <div class="panel-header">
+      <span>Context</span>
+      <span id="memory-count" style="color:var(--accent);font-size:9px;"></span>
+    </div>
+    <div class="panel-body" id="context-panel">
+      <div class="info-card">
+        <div class="info-card-label">Location</div>
+        <div class="info-card-value">Cape Town, ZA · SAST (UTC+2)</div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-label">Connected Tools</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;">
+          <span class="tool-tag gmail">📧 Gmail</span>
+          <span class="tool-tag cal">📅 Calendar</span>
+          <span class="tool-tag notion">📋 Notion</span>
+          <span class="tool-tag memory">🧠 Memory</span>
+        </div>
+      </div>
+      <div class="info-card" id="memory-panel">
+        <div class="info-card-label">What Alfius Knows</div>
+        <div id="memory-list">
+          <div class="memory-item">
+            <span class="memory-dot">●</span>
+            <span>Loading memory...</span>
           </div>
         </div>
       </div>
-      <div class="ai-input-row">
-        <div class="chips" id="chips">
-          <div class="chip" onclick="ask('What is on my calendar today?')">Today</div>
-          <div class="chip" onclick="ask('Check my emails — what needs urgent attention?')">Urgent emails</div>
-          <div class="chip" onclick="ask('Give me a full morning briefing.')">Briefing</div>
-          <div class="chip" onclick="ask('Am I free tomorrow afternoon?')">Free slots</div>
-          <div class="chip notion-chip" onclick="ask('What are my current Alfius build tasks in Notion?')">Notion tasks</div>
-          <div class="chip notion-chip" onclick="ask('Add a new task to my Alfius Notion board: Daily briefing n8n automation — Sprint 2, P1')">Add task</div>
-        </div>
-        <div class="irow">
-          <input class="ai-inp" id="ai-inp" placeholder="Ask Alfius anything..." onkeydown="if(event.key==='Enter')send()">
-          <button class="btn-snd" onclick="send()">↗</button>
-        </div>
-      </div>
     </div>
   </div>
+ 
 </div>
-
-<!-- COMPOSE MODAL -->
-<div class="modal-overlay" id="compose-modal">
-  <div class="modal">
-    <div class="mh"><div class="mh-title">✏️ Compose Email</div><button class="mclose" onclick="closeModal('compose-modal')">✕</button></div>
-    <div class="mfield"><div class="mlabel">To</div><input class="minput" id="draft-to" placeholder="recipient@email.com"></div>
-    <div class="mfield"><div class="mlabel">Subject</div><input class="minput" id="draft-subject" placeholder="Subject..."></div>
-    <div class="mfield"><div class="mlabel">Message</div><textarea class="mtextarea" id="draft-body" placeholder="Type your message or describe it and click AI Draft..."></textarea></div>
-    <div class="mactions">
-      <button class="btn btn-ghost" onclick="aiDraft()">⬡ AI Draft</button>
-      <button class="btn btn-ghost" onclick="closeModal('compose-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="confirmSend()">Send ↗</button>
-    </div>
-  </div>
+ 
+<!-- SPEAKING BADGE -->
+<div class="speaking-badge" id="speaking-badge">
+  🔊 Speaking...
 </div>
-
-<!-- BOOK MEETING MODAL -->
-<div class="modal-overlay" id="meeting-modal">
-  <div class="modal">
-    <div class="mh"><div class="mh-title">🤝 Book a Meeting</div><button class="mclose" onclick="closeModal('meeting-modal')">✕</button></div>
-    <div class="mfield"><div class="mlabel">Meeting Title</div><input class="minput" id="mtg-title" placeholder="e.g. Strategy sync with Naledi"></div>
-    <div class="mfield"><div class="mlabel">Date & Time</div><input class="minput" id="mtg-date" placeholder="e.g. Monday 2pm, or 2026-04-01T14:00"></div>
-    <div class="mfield"><div class="mlabel">Duration</div><input class="minput" id="mtg-dur" placeholder="e.g. 60 minutes"></div>
-    <div class="mfield"><div class="mlabel">Attendees (emails, comma-separated)</div><input class="minput" id="mtg-attendees" placeholder="e.g. naledi@example.com, jaco@example.com"></div>
-    <div class="mfield"><div class="mlabel">Location / Link</div><input class="minput" id="mtg-location" placeholder="e.g. Google Meet, Boardroom A, Zoom"></div>
-    <div class="mfield"><div class="mlabel">Notes / Agenda</div><textarea class="mtextarea" id="mtg-notes" placeholder="Add agenda items or context..." style="min-height:60px"></textarea></div>
-    <div class="mactions">
-      <button class="btn btn-ghost" onclick="closeModal('meeting-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="bookMeeting()">Book via Alfius ↗</button>
-    </div>
-  </div>
-</div>
-
+ 
 <script>
-const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
-const TODAY = new Date().toLocaleDateString('en-ZA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-let currentView = 'inbox';
-
-// CLOCK
-setInterval(()=>{ document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-ZA',{hour12:false}); },1000);
-document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-ZA',{hour12:false});
-
-// NAV
-function switchView(view, el) {
-  currentView = view;
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  el?.classList.add('active');
-  const icons={inbox:'📧',important:'⭐',today:'📅',week:'🗓',schedule:'⚡',tasks:'📋',alfius_hq:'⬡'};
-  const titles={inbox:'Inbox',important:'Important',today:"Today's Schedule",week:'This Week',schedule:'Upcoming',tasks:'Notion Task Board',alfius_hq:'Alfius HQ'};
-  document.getElementById('panel-icon').textContent=icons[view]||'⬡';
-  document.getElementById('panel-title').textContent=titles[view]||view;
-  const notionBtn = document.getElementById('notion-log-btn');
-  notionBtn.style.display = (view==='inbox'||view==='important') ? 'inline-flex' : 'none';
-  if(['inbox','important'].includes(view)) loadEmails(view);
-  else if(['today','week','schedule'].includes(view)) loadCalendar(view);
-  else if(view==='tasks') loadNotionTasks();
-  else if(view==='alfius_hq') loadAlfiusHQ();
+// ════════════════════════════════════════════
+// ALFIUS v2 — CORE CONFIGURATION
+// ════════════════════════════════════════════
+ 
+const CONFIG = {
+  // Supabase
+  supabaseUrl: 'https://hnkssstcjsdrahoqcpyt.supabase.co',
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhua3Nzc3RjanNkcmFob3FjcHl0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2NjcyNTksImV4cCI6MjA5MDI0MzI1OX0.ehyVta4KPE0KqX_Pz6iuXy0A_ZWZ3y2-V3uqQtPkTRc',
+  memoryFunctionUrl: 'https://hnkssstcjsdrahoqcpyt.supabase.co/functions/v1/alfius-memory',
+ 
+  // ElevenLabs — Voice ID: Daniel
+  elevenLabsVoiceId: 'onwK4e9ZLuTAKqWW03F9',
+ 
+  // Vercel API proxy endpoints (set these up in /api/)
+  // These read ANTHROPIC_API_KEY and ELEVENLABS_API_KEY from Vercel env vars
+  claudeProxyUrl: '/api/claude',
+  elevenLabsProxyUrl: '/api/elevenlabs',
+ 
+  // Fallback: direct Anthropic call (key must be set below if proxy not available)
+  anthropicDirectKey: '',  // Leave empty — use proxy instead
+  anthropicModel: 'claude-sonnet-4-20250514',
+};
+ 
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+ 
+let conversationHistory = [];
+let sessionId = 'session_' + Date.now();
+let isRecording = false;
+let recognition = null;
+let isSpeaking = false;
+let currentAudio = null;
+let memoryFacts = [];
+ 
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+ 
+document.addEventListener('DOMContentLoaded', async () => {
+  startClock();
+  initSpeechRecognition();
+  await loadMemory();
+  
+  // Auto-focus input
+  document.getElementById('chat-input').focus();
+});
+ 
+function startClock() {
+  function update() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('en-ZA', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    });
+  }
+  update();
+  setInterval(update, 1000);
 }
-
-// SKELETON
-function showSkeleton(n=4){
-  let h='';
-  for(let i=0;i<n;i++) h+=`<div class="skel-card"><div style="display:flex;gap:10px;mb:8px;align-items:center"><div style="width:30px;height:30px;border-radius:6px" class="skeleton"></div><div style="flex:1"><div class="skeleton" style="width:40%;margin-bottom:5px"></div><div class="skeleton" style="width:60%"></div></div></div><div class="skeleton" style="width:70%;margin:8px 0 5px"></div><div class="skeleton" style="width:88%;height:10px"></div></div>`;
-  document.getElementById('panel-body').innerHTML=h;
-}
-
-// AI CHAT
-function addMsg(who,text,thinking=false){
-  const wrap=document.getElementById('ai-msgs');
-  const d=document.createElement('div'); d.className='ai-msg';
-  const isAlf=who==='ALFIUS';
-  const id='m'+Date.now()+Math.random().toString(36).slice(2);
-  d.innerHTML=`<div class="ai-ava ${isAlf?'ava-alf':'ava-user'}">${isAlf?'ALF':'YOU'}</div><div class="ai-bubble${isAlf?'':' user-b'}"><div class="ai-bname">${who}</div><div id="${id}">${thinking?'<div class="thinking"><span></span><span></span><span></span></div>':text}</div></div>`;
-  wrap.appendChild(d); wrap.scrollTop=wrap.scrollHeight; return id;
-}
-
-async function callClaude(userMsg, systemExtra=''){
-  const sys = `You are Alfius — a Jarvis-style personal AI assistant for a professional in Cape Town, South Africa. Today is ${TODAY}. You have access to Gmail, Google Calendar, and Notion via connected MCP tools. Be concise, intelligent, and slightly futuristic. Use brief structured formatting. Under 200 words unless detail is needed. ${systemExtra}`;
+ 
+// ════════════════════════════════════════════
+// MEMORY — Supabase
+// ════════════════════════════════════════════
+ 
+async function loadMemory() {
   try {
-    const r=await fetch(ANTHROPIC_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:[{role:'user',content:userMsg}]})});
-    const d=await r.json(); return d.content?.[0]?.text||'Systems ready.';
-  } catch(e){ return 'Standing by — connect me to your tools for live data.'; }
-}
-
-async function ask(prompt){
-  document.getElementById('ai-inp').value='';
-  addMsg('YOU',prompt);
-  const tid=addMsg('ALFIUS','',true);
-  const reply=await callClaude(prompt);
-  document.getElementById(tid).innerHTML=reply.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
-  if('speechSynthesis'in window){ const u=new SpeechSynthesisUtterance(reply.replace(/[#*`_<>]/g,'').substring(0,300)); u.lang='en-ZA';u.rate=1.05;u.pitch=0.9; speechSynthesis.speak(u); }
-  document.getElementById('ai-msgs').scrollTop=9999;
-}
-
-function send(){ const v=document.getElementById('ai-inp').value.trim(); if(v){document.getElementById('ai-inp').value='';ask(v);} }
-
-// LOAD EMAILS
-async function loadEmails(type){
-  showSkeleton(5);
-  const prompt=`List my ${type==='important'?'important/starred':'most recent inbox'} Gmail emails as a JSON array: [{sender,email,subject,time,preview,urgent,needsReply}]. Return ONLY the JSON array. If live data unavailable, simulate 5 realistic emails for a Cape Town professional.`;
-  try {
-    const raw=await callClaude(prompt,'Return ONLY valid JSON array, no markdown fences.');
-    const clean=raw.replace(/```json|```/g,'').trim();
-    const emails=JSON.parse(clean.startsWith('[') ? clean : clean.substring(clean.indexOf('[')));
-    renderEmails(emails);
-  } catch(e){ renderEmails(fallbackEmails()); }
-}
-
-function fallbackEmails(){
-  return [
-    {sender:'Naledi Dlamini',email:'naledi@acceleratesa.co.za',subject:'Investor deck — urgent review needed',time:'08:32',preview:'Critical feedback on slides 4-7 before tomorrow\'s pitch. Please check ASAP.',urgent:true,needsReply:true},
-    {sender:'Google Calendar',email:'calendar-notification@google.com',subject:'Reminder: Product Strategy sync in 30 min',time:'09:15',preview:'Your meeting "Product Strategy — Q2 Roadmap" starts at 10:00.',urgent:false,needsReply:false},
-    {sender:'Jaco van Rensburg',email:'jaco@techbridge.co.za',subject:'Re: Partnership proposal — next steps',time:'Yesterday',preview:'I think we can move forward. Can we get on a call this week?',urgent:false,needsReply:true},
-    {sender:'AWS Billing',email:'no-reply@amazonaws.com',subject:'Your AWS bill for March 2026',time:'Yesterday',preview:'Estimated bill: $142.80. Charged to card on file Apr 1.',urgent:false,needsReply:false},
-    {sender:'Tariq Osman',email:'tariq@founderstudio.io',subject:'Quick question on the Alfius build',time:'Monday',preview:'Saw you\'re building with Claude APIs — would love to chat collab.',urgent:false,needsReply:true},
-  ];
-}
-
-function renderEmails(emails){
-  const body=document.getElementById('panel-body');
-  if(!emails?.length){body.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No emails</div></div>';return;}
-  const urg=emails.filter(e=>e.urgent).length;
-  let h=urg>0?`<div class="alert-banner"><span>⚠️</span><span style="flex:1"><strong>${urg} urgent</strong> email${urg>1?'s':''} need attention</span><span class="alert-action" onclick="ask('Summarise my urgent emails and tell me exactly what to do for each.')">Review →</span></div>`:'';
-  h+='<div class="slabel">Messages</div>';
-  emails.forEach((e,i)=>{
-    const init=(e.sender||'??').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-    const cls=e.urgent?'urgent':e.needsReply?'unread':'';
-    let tags=e.urgent?'<span class="tag tag-urgent">Urgent</span>':'';
-    tags+=e.needsReply?'<span class="tag tag-reply">Reply needed</span>':'';
-    if(!e.urgent&&!e.needsReply) tags='<span class="tag tag-info">Read</span>';
-    h+=`<div class="email-card ${cls}" onclick="openEmail(${i})"><div class="email-top"><div class="email-ava">${init}</div><div class="email-sender">${e.sender||'?'}</div><div class="email-time">${e.time||''}</div></div><div class="email-subject">${e.subject||'(no subject)'}</div><div class="email-preview">${e.preview||''}</div><div class="etags">${tags}</div></div>`;
-  });
-  body.innerHTML=h; window._emails=emails;
-  document.getElementById('unread-badge').textContent=emails.filter(e=>e.urgent||e.needsReply).length||emails.length;
-}
-
-function openEmail(i){
-  const e=(window._emails||[])[i]; if(!e)return;
-  ask(`I'm reading this email from ${e.sender}: "${e.subject}". Preview: "${e.preview}". What should I do? Draft a reply if needed.`);
-}
-
-// LOG EMAILS TO NOTION
-async function logToNotion(){
-  const tid=addMsg('ALFIUS','',true);
-  const reply=await callClaude('I want to log a summary of my current emails to my Alfius Notion HQ page as an update. Write a brief bullet summary of the email situation — urgent items, pending replies, FYI items — suitable for pasting into a Notion page.');
-  document.getElementById(tid).innerHTML=reply.replace(/\n/g,'<br>');
-  addMsg('ALFIUS','<span style="color:var(--green)">✓ Summary ready — you can copy this to your Notion HQ page.</span>');
-}
-
-// LOAD CALENDAR
-async function loadCalendar(view){
-  showSkeleton(4);
-  const prompts={today:`List today's Google Calendar events as JSON: [{title,startTime,endTime,location,color}]. Simulate if no live data.`,week:`List this week's calendar events as JSON: [{title,startTime,endTime,date,dayOfWeek,location,color}].`,schedule:`List next 7 upcoming events as JSON: [{title,startTime,endTime,date,dayOfWeek,location,color}].`};
-  try {
-    const raw=await callClaude(prompts[view],'Return ONLY valid JSON array.');
-    const clean=raw.replace(/```json|```/g,'').trim();
-    const evs=JSON.parse(clean.startsWith('[')?clean:clean.substring(clean.indexOf('[')));
-    renderCalendar(evs);
-  } catch(e){ renderCalendar(fallbackEvents()); }
-}
-
-function fallbackEvents(){
-  return [
-    {title:'Morning standup',startTime:'09:00',endTime:'09:30',date:'Today',dayOfWeek:'Friday',location:'Google Meet',color:'cyan'},
-    {title:'Product Strategy — Q2 Roadmap',startTime:'10:00',endTime:'11:30',date:'Today',dayOfWeek:'Friday',location:'Boardroom A',color:'amber'},
-    {title:'Lunch with Naledi — investor feedback',startTime:'12:30',endTime:'13:30',date:'Today',dayOfWeek:'Friday',location:'The Test Kitchen',color:'green'},
-    {title:'1:1 with Jaco — partnership call',startTime:'15:00',endTime:'15:45',date:'Today',dayOfWeek:'Friday',location:'Zoom',color:'purple'},
-    {title:'Weekly review & planning',startTime:'17:00',endTime:'18:00',date:'Today',dayOfWeek:'Friday',location:'Home office',color:'cyan'},
-  ];
-}
-
-const colorMap={cyan:'#00c8ff',amber:'#ffb347',green:'#00e5a0',purple:'#b57fff',red:'#ff4e6a',blue:'#4488ff'};
-const bgMap={cyan:'rgba(0,200,255,0.07)',amber:'rgba(255,179,71,0.07)',green:'rgba(0,229,160,0.07)',purple:'rgba(181,127,255,0.07)',red:'rgba(255,79,106,0.07)',blue:'rgba(68,136,255,0.07)'};
-
-function renderCalendar(evs){
-  const body=document.getElementById('panel-body');
-  if(!evs?.length){body.innerHTML='<div class="empty-state"><div class="empty-icon">🗓</div><div class="empty-title">Clear calendar</div></div>';return;}
-  let h=`<div class="slabel">${evs.length} event${evs.length!==1?'s':''}</div>`;
-  evs.forEach((ev,i)=>{
-    const c=colorMap[ev.color]||colorMap.cyan; const bg=bgMap[ev.color]||bgMap.cyan;
-    h+=`<div class="event-card" style="background:${bg}" onclick="openEvent(${i})">
-      <div class="ev-time-col"><div class="ev-time" style="color:${c}">${ev.startTime||'—'}</div><div class="ev-dur">${ev.endTime?'until '+ev.endTime:''}</div></div>
-      <div class="ev-bar" style="background:${c}"></div>
-      <div class="ev-content">
-        <div class="ev-title">${ev.title}</div>
-        <div class="ev-detail">${[ev.location,ev.dayOfWeek||ev.date].filter(Boolean).join(' · ')}</div>
-        <div class="ev-actions">
-          <button class="ev-btn ev-btn-brief" onclick="event.stopPropagation();ask('Give me a prep briefing for: ${ev.title.replace(/'/g,"\\'")} at ${ev.startTime}')">Prep briefing</button>
-          <button class="ev-btn ev-btn-notion" onclick="event.stopPropagation();notionLogEvent(${i})">Save to Notion</button>
-        </div>
-      </div>
-    </div>`;
-  });
-  body.innerHTML=h; window._events=evs;
-}
-
-function openEvent(i){
-  const ev=(window._events||[])[i];if(!ev)return;
-  ask(`I'm looking at: "${ev.title}" at ${ev.startTime}${ev.location?' at '+ev.location:''}. Give me a prep briefing.`);
-}
-
-async function notionLogEvent(i){
-  const ev=(window._events||[])[i];if(!ev)return;
-  const tid=addMsg('ALFIUS','',true);
-  const reply=await callClaude(`Create a brief Notion-ready summary for the event "${ev.title}" at ${ev.startTime}, ${ev.location||''}. Include: agenda prep, key talking points, and action items format.`);
-  document.getElementById(tid).innerHTML='<span style="color:var(--green)">✓</span> '+reply.replace(/\n/g,'<br>');
-}
-
-// LOAD NOTION TASKS
-async function loadNotionTasks(){
-  showSkeleton(5);
-  const prompt=`List the current Alfius build tasks from my Notion Task Board database. Return as JSON array: [{task,status,priority,module,notes}]. If no live access, return the known Sprint 1 tasks.`;
-  try {
-    const raw=await callClaude(prompt,'Return ONLY valid JSON array.');
-    const clean=raw.replace(/```json|```/g,'').trim();
-    const tasks=JSON.parse(clean.startsWith('[')?clean:clean.substring(clean.indexOf('[')));
-    renderNotionTasks(tasks);
-  } catch(e){ renderNotionFallback(); }
-}
-
-function renderNotionTasks(tasks){
-  const body=document.getElementById('panel-body');
-  const statusMap={'Done':'ns-done','In Progress':'ns-progress','Not Started':'ns-todo','Blocked':'ns-critical','P0 - Critical':'ns-critical','P1 - High':'ns-progress'};
-  const notion_quick=`<div class="notion-quick"><div class="notion-quick-title">⬡ Quick Add Task to Notion</div><div class="notion-quick-row"><input class="notion-quick-inp" id="quick-task-inp" placeholder="New task description..." onkeydown="if(event.key==='Enter')quickAddTask()"><button class="btn-notion" onclick="quickAddTask()">Add ↗</button></div></div>`;
-  let h=notion_quick+'<div class="slabel">Sprint 1 · Active Tasks</div>';
-  (tasks||[]).forEach((t,i)=>{
-    const sc=statusMap[t.status]||'ns-todo';
-    const pc=statusMap[t.priority]||'ns-todo';
-    h+=`<div class="notion-card" onclick="ask('Tell me more about this Alfius task: ${(t.task||'').replace(/'/g,"\\'")}')">
-      <div class="notion-card-title">
-        <span>${t.task||'Untitled'}</span>
-        <span class="notion-status ${sc}">${t.status||'Unknown'}</span>
-        ${t.priority?`<span class="notion-status ${pc}">${t.priority}</span>`:''}
-      </div>
-      <div class="notion-card-meta">
-        ${t.module?`<span>📦 ${t.module}</span>`:''}
-        ${t.notes?`<span style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.notes}</span>`:''}
-      </div>
-    </div>`;
-  });
-  body.innerHTML=h;
-}
-
-function renderNotionFallback(){
-  const tasks=[
-    {task:'Gmail integration — read & summarise inbox',status:'In Progress',priority:'P0 - Critical',module:'Gmail, Core AI',notes:'Connect Gmail MCP to Alfius chat'},
-    {task:'Gmail integration — draft email replies',status:'Not Started',priority:'P0 - Critical',module:'Gmail',notes:'Draft replies for user approval'},
-    {task:'Google Calendar — read today and week',status:'In Progress',priority:'P0 - Critical',module:'Calendar, Core AI',notes:'Live schedule in Alfius'},
-    {task:'Google Calendar — create and book events',status:'Not Started',priority:'P0 - Critical',module:'Calendar',notes:'Book with user confirmation'},
-    {task:'Deploy Alfius to Vercel',status:'Not Started',priority:'P1 - High',module:'Vercel, Core AI',notes:'Persistent URL from any device'},
-    {task:'n8n morning briefing automation',status:'Not Started',priority:'P1 - High',module:'n8n, Gmail, Calendar',notes:'Daily 7am briefing workflow'},
-    {task:'Persistent memory store',status:'Not Started',priority:'P1 - High',module:'Core AI, Notion',notes:'Remember context across sessions'},
-  ];
-  renderNotionTasks(tasks);
-}
-
-async function quickAddTask(){
-  const val=document.getElementById('quick-task-inp').value.trim();
-  if(!val) return;
-  document.getElementById('quick-task-inp').value='';
-  const tid=addMsg('ALFIUS','',true);
-  const reply=await callClaude(`The user wants to add a new task to their Alfius Notion Task Board: "${val}". Acknowledge it and confirm what details (priority, module, sprint) you would assign to this task. In a real deployment this would write directly to the Notion database via MCP.`);
-  document.getElementById(tid).innerHTML=reply.replace(/\n/g,'<br>');
-}
-
-async function loadAlfiusHQ(){
-  showSkeleton(3);
-  const prompt=`Give me an overview of the Alfius project status from my Notion HQ. Include: current sprint, what's done, what's in progress, and top 3 priorities. Format clearly.`;
-  const body=document.getElementById('panel-body');
-  body.innerHTML='';
-  const reply=await callClaude(prompt);
-  body.innerHTML=`<div class="summary-card"><div class="summary-title">⬡ Alfius HQ · Project Status</div><div class="summary-text">${reply.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div></div>`;
-  addMsg('ALFIUS','Loaded Alfius HQ overview from Notion.');
-}
-
-// QUICK ACTIONS
-function summariseCurrent(){
-  const prompts={inbox:'Summarise my inbox — urgent items, pending replies, and FYI.',important:'Summarise my important emails.',today:'Give me a full briefing for today\'s calendar.',week:'Summarise this week\'s calendar.',tasks:'What are my most critical Alfius build tasks right now?',alfius_hq:'Give me a project status update for Alfius.'};
-  ask(prompts[currentView]||'Summarise current view.');
-}
-
-function refreshView(){ switchView(currentView); }
-
-function quickAction(type){
-  if(type==='briefing'){
-    switchView('today',document.querySelector('.nav-item'));
-    setTimeout(()=>ask('Give me a complete morning briefing: calendar today, urgent emails, top 3 priorities.'),300);
-  } else if(type==='schedule_meeting'){
-    document.getElementById('meeting-modal').classList.add('open');
+    // Load facts
+    const factsRes = await fetch(`${CONFIG.supabaseUrl}/rest/v1/memory_facts?select=fact,category&order=created_at.desc&limit=20`, {
+      headers: {
+        'apikey': CONFIG.supabaseKey,
+        'Authorization': `Bearer ${CONFIG.supabaseKey}`
+      }
+    });
+ 
+    if (factsRes.ok) {
+      const facts = await factsRes.json();
+      memoryFacts = facts;
+      renderMemory(facts);
+      document.getElementById('memory-count').textContent = `${facts.length} facts`;
+    }
+ 
+    // Load last 10 conversation turns for context
+    const convRes = await fetch(`${CONFIG.supabaseUrl}/rest/v1/memory_conversations?select=role,content,created_at&order=created_at.desc&limit=20`, {
+      headers: {
+        'apikey': CONFIG.supabaseKey,
+        'Authorization': `Bearer ${CONFIG.supabaseKey}`
+      }
+    });
+ 
+    if (convRes.ok) {
+      const convs = await convRes.json();
+      // Reverse to chronological order
+      conversationHistory = convs.reverse().map(c => ({
+        role: c.role,
+        content: c.content
+      }));
+    }
+ 
+  } catch (err) {
+    console.error('Memory load error:', err);
+    renderMemory([{ fact: 'Cape Town, South Africa', category: 'location' }]);
   }
 }
-
-// COMPOSE
-function composeDraft(){ document.getElementById('compose-modal').classList.add('open'); }
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
-
-async function aiDraft(){
-  const to=document.getElementById('draft-to').value;
-  const subj=document.getElementById('draft-subject').value;
-  const body=document.getElementById('draft-body');
-  const desc=body.value;
-  body.value='Drafting...';
-  const reply=await callClaude(`Draft a professional email to ${to||'the recipient'} about: ${subj||desc}. Return ONLY the email body, no subject line, no preamble.`);
-  body.value=reply;
+ 
+function renderMemory(facts) {
+  const list = document.getElementById('memory-list');
+  if (!facts.length) {
+    list.innerHTML = '<div class="memory-item"><span class="memory-dot">●</span><span>No facts stored yet</span></div>';
+    return;
+  }
+  list.innerHTML = facts.map(f => `
+    <div class="memory-item">
+      <span class="memory-dot">●</span>
+      <span>${f.fact}</span>
+    </div>
+  `).join('');
 }
-
-async function confirmSend(){
-  const to=document.getElementById('draft-to').value;
-  if(!to){alert('Please enter a recipient.');return;}
-  closeModal('compose-modal');
-  ask(`I want to send an email to ${to} with subject "${document.getElementById('draft-subject').value}". Confirm it looks good and what I should check before sending.`);
+ 
+async function saveToMemory(role, content) {
+  try {
+    await fetch(`${CONFIG.supabaseUrl}/rest/v1/memory_conversations`, {
+      method: 'POST',
+      headers: {
+        'apikey': CONFIG.supabaseKey,
+        'Authorization': `Bearer ${CONFIG.supabaseKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        role,
+        content,
+        session_id: sessionId,
+        created_at: new Date().toISOString()
+      })
+    });
+  } catch (err) {
+    console.error('Memory save error:', err);
+  }
 }
-
-// BOOK MEETING
-async function bookMeeting(){
-  const title=document.getElementById('mtg-title').value;
-  const date=document.getElementById('mtg-date').value;
-  const dur=document.getElementById('mtg-dur').value;
-  const attendees=document.getElementById('mtg-attendees').value;
-  const location=document.getElementById('mtg-location').value;
-  const notes=document.getElementById('mtg-notes').value;
-  if(!title||!date){alert('Please enter a title and date/time.');return;}
-  closeModal('meeting-modal');
-  ask(`Book a meeting: "${title}" on ${date} for ${dur||'60 minutes'} with ${attendees||'just me'} at ${location||'to be determined'}. Notes: ${notes||'none'}. Check my calendar for conflicts and confirm the booking details.`);
+ 
+// ════════════════════════════════════════════
+// BUILD SYSTEM PROMPT
+// ════════════════════════════════════════════
+ 
+function buildSystemPrompt() {
+  const factsContext = memoryFacts.length
+    ? '\n\nFacts I know about you:\n' + memoryFacts.map(f => `- ${f.fact}`).join('\n')
+    : '';
+ 
+  return `You are Alfius — a Jarvis-level personal AI Life OS for Jannie Joubert, a founder and builder based in Cape Town, South Africa.
+ 
+IDENTITY
+- You are a co-founder, CFO, health coach, research analyst, and project manager in one
+- You are direct, sharp, and action-oriented — not a generic assistant
+- You speak like a trusted partner, not a customer service bot
+- Always refer to the user by first name (Jannie) when natural
+ 
+CONTEXT
+- Location: Cape Town, South Africa (SAST = UTC+2)
+- Currency: ZAR (South African Rand)
+- Language: en-ZA
+- Active projects: Orynt, Northline AI, movr, Alfius
+ 
+CONNECTED TOOLS
+You have access to (via Claude's MCP connections): Gmail, Google Calendar, Notion, Canva, Miro, Vercel, n8n, Supabase, GoDaddy, Zapier
+ 
+MEMORY
+You remember previous conversations. Always acknowledge things you've been told before. When you learn new facts about the user, note them to be saved.${factsContext}
+ 
+RESPONSE STYLE
+- Be concise and direct for simple queries
+- For briefings and reviews: structured, scannable, action-oriented
+- Use markdown formatting when helpful (bold, bullets, headers)
+- Always end with the next recommended action or question when appropriate
+- Never say "As an AI language model..." — you are Alfius, a personal OS
+ 
+MISSION
+Build and maintain a Jarvis-level life OS. Help Jannie run his business, health, finance, research, and communications with maximum efficiency.`;
 }
-
-// AUTO-LOAD
-setTimeout(()=>{ switchView('inbox', document.querySelector('.nav-item.active')); },400);
+ 
+// ════════════════════════════════════════════
+// SEND MESSAGE
+// ════════════════════════════════════════════
+ 
+async function sendMessage(text) {
+  const input = document.getElementById('chat-input');
+  const message = text || input.value.trim();
+  if (!message) return;
+ 
+  // Clear input + hide welcome
+  input.value = '';
+  autoResize(input);
+  document.getElementById('welcome-screen')?.remove();
+ 
+  // Add user message to UI
+  appendMessage('user', message);
+ 
+  // Save to memory
+  await saveToMemory('user', message);
+ 
+  // Add to conversation history
+  conversationHistory.push({ role: 'user', content: message });
+ 
+  // Keep history manageable (last 20 turns)
+  if (conversationHistory.length > 20) {
+    conversationHistory = conversationHistory.slice(-20);
+  }
+ 
+  // Show thinking indicator
+  const thinkingId = showThinking();
+ 
+  // Disable send btn
+  document.getElementById('send-btn').disabled = true;
+ 
+  try {
+    const reply = await callClaude(message);
+    hideThinking(thinkingId);
+    appendMessage('alfius', reply);
+    
+    // Save AI reply to memory
+    await saveToMemory('assistant', reply);
+    conversationHistory.push({ role: 'assistant', content: reply });
+ 
+    // Speak the reply (first 500 chars to keep it concise)
+    const speakText = reply.replace(/[#*`_\[\]]/g, '').substring(0, 600);
+    await speak(speakText);
+ 
+  } catch (err) {
+    hideThinking(thinkingId);
+    appendMessage('alfius', `⚠️ Error: ${err.message}. Check your API configuration.`);
+    console.error(err);
+  }
+ 
+  document.getElementById('send-btn').disabled = false;
+}
+ 
+// ════════════════════════════════════════════
+// CLAUDE API CALL
+// ════════════════════════════════════════════
+ 
+async function callClaude(userMessage) {
+  const systemPrompt = buildSystemPrompt();
+ 
+  // Try Vercel proxy first (secure — uses env vars)
+  try {
+    const proxyRes = await fetch(CONFIG.claudeProxyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: systemPrompt,
+        messages: conversationHistory,
+        model: CONFIG.anthropicModel,
+        max_tokens: 1024
+      })
+    });
+ 
+    if (proxyRes.ok) {
+      const data = await proxyRes.json();
+      return data.content?.[0]?.text || 'No response received.';
+    }
+    
+    // If proxy returns 404 (not set up yet), fall through to direct call
+    if (proxyRes.status !== 404) {
+      throw new Error(`Proxy error: ${proxyRes.status}`);
+    }
+  } catch (proxyErr) {
+    // If proxy doesn't exist yet, try direct call
+    if (!CONFIG.anthropicDirectKey) {
+      throw new Error('API not configured. Add ANTHROPIC_API_KEY to Vercel env vars and set up /api/claude proxy, or set anthropicDirectKey in CONFIG.');
+    }
+  }
+ 
+  // Fallback: direct Anthropic call (key exposed in browser — dev only)
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': CONFIG.anthropicDirectKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: CONFIG.anthropicModel,
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: conversationHistory
+    })
+  });
+ 
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || `HTTP ${res.status}`);
+  }
+ 
+  const data = await res.json();
+  return data.content?.[0]?.text || 'No response.';
+}
+ 
+// ════════════════════════════════════════════
+// ELEVENLABS TTS
+// ════════════════════════════════════════════
+ 
+async function speak(text) {
+  if (!text || text.length < 3) return;
+ 
+  try {
+    // Stop current audio
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio = null;
+    }
+ 
+    document.getElementById('speaking-badge').classList.add('active');
+    isSpeaking = true;
+ 
+    // Try proxy first
+    let audioBlob = null;
+ 
+    try {
+      const proxyRes = await fetch(CONFIG.elevenLabsProxyUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voiceId: CONFIG.elevenLabsVoiceId })
+      });
+ 
+      if (proxyRes.ok) {
+        audioBlob = await proxyRes.blob();
+      }
+    } catch (e) {
+      // proxy not available yet
+    }
+ 
+    if (!audioBlob) {
+      // Fallback: browser TTS
+      document.getElementById('speaking-badge').classList.remove('active');
+      isSpeaking = false;
+      if ('speechSynthesis' in window) {
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.lang = 'en-ZA';
+        utt.rate = 1.0;
+        utt.pitch = 1.0;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utt);
+        utt.onend = () => { isSpeaking = false; };
+      }
+      return;
+    }
+ 
+    // Play ElevenLabs audio
+    const url = URL.createObjectURL(audioBlob);
+    currentAudio = new Audio(url);
+    currentAudio.play();
+    currentAudio.onended = () => {
+      document.getElementById('speaking-badge').classList.remove('active');
+      isSpeaking = false;
+      URL.revokeObjectURL(url);
+    };
+    currentAudio.onerror = () => {
+      document.getElementById('speaking-badge').classList.remove('active');
+      isSpeaking = false;
+    };
+ 
+  } catch (err) {
+    document.getElementById('speaking-badge').classList.remove('active');
+    isSpeaking = false;
+    console.error('TTS error:', err);
+  }
+}
+ 
+// ════════════════════════════════════════════
+// SPEECH RECOGNITION (Voice Input)
+// ════════════════════════════════════════════
+ 
+function initSpeechRecognition() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    document.getElementById('mic-btn').style.opacity = '0.3';
+    document.getElementById('mic-btn').title = 'Voice not supported in this browser';
+    return;
+  }
+ 
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'en-ZA';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+ 
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    document.getElementById('chat-input').value = transcript;
+    autoResize(document.getElementById('chat-input'));
+    sendMessage(transcript);
+  };
+ 
+  recognition.onend = () => {
+    isRecording = false;
+    document.getElementById('mic-btn').classList.remove('active');
+    document.getElementById('voice-bar').classList.remove('active');
+  };
+ 
+  recognition.onerror = (err) => {
+    console.error('Speech recognition error:', err);
+    isRecording = false;
+    document.getElementById('mic-btn').classList.remove('active');
+    document.getElementById('voice-bar').classList.remove('active');
+  };
+}
+ 
+function toggleVoice() {
+  if (!recognition) return;
+ 
+  if (isRecording) {
+    recognition.stop();
+    isRecording = false;
+    document.getElementById('mic-btn').classList.remove('active');
+    document.getElementById('voice-bar').classList.remove('active');
+  } else {
+    // Stop speaking if active
+    if (currentAudio) currentAudio.pause();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+ 
+    recognition.start();
+    isRecording = true;
+    document.getElementById('mic-btn').classList.add('active');
+    document.getElementById('voice-bar').classList.add('active');
+  }
+}
+ 
+// ════════════════════════════════════════════
+// UI HELPERS
+// ════════════════════════════════════════════
+ 
+function appendMessage(role, content) {
+  const area = document.getElementById('chat-area');
+  const isAlfius = role === 'alfius' || role === 'assistant';
+ 
+  const div = document.createElement('div');
+  div.className = `message ${isAlfius ? '' : 'user'}`;
+ 
+  const avatar = document.createElement('div');
+  avatar.className = `msg-avatar ${isAlfius ? 'alfius' : 'user-av'}`;
+  avatar.textContent = isAlfius ? 'ALF' : 'YOU';
+ 
+  const msgContent = document.createElement('div');
+  msgContent.className = 'msg-content';
+  msgContent.innerHTML = formatMarkdown(content);
+ 
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' });
+ 
+  const wrapper = document.createElement('div');
+  wrapper.style.display = 'flex';
+  wrapper.style.flexDirection = 'column';
+  wrapper.style.gap = '3px';
+  wrapper.style.maxWidth = '680px';
+  if (!isAlfius) wrapper.style.alignItems = 'flex-end';
+ 
+  wrapper.appendChild(msgContent);
+  wrapper.appendChild(meta);
+  div.appendChild(avatar);
+  div.appendChild(wrapper);
+  area.appendChild(div);
+ 
+  // Scroll to bottom
+  area.scrollTop = area.scrollHeight;
+}
+ 
+function showThinking() {
+  const id = 'thinking-' + Date.now();
+  const area = document.getElementById('chat-area');
+ 
+  const div = document.createElement('div');
+  div.className = 'message';
+  div.id = id;
+ 
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar alfius';
+  avatar.textContent = 'ALF';
+ 
+  const msg = document.createElement('div');
+  msg.className = 'msg-content thinking';
+  msg.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div> Thinking...`;
+ 
+  div.appendChild(avatar);
+  div.appendChild(msg);
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+ 
+  return id;
+}
+ 
+function hideThinking(id) {
+  document.getElementById(id)?.remove();
+}
+ 
+function formatMarkdown(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code style="background:rgba(0,194,255,0.1);padding:1px 5px;border-radius:3px;font-family:monospace;font-size:12px">$1</code>')
+    .replace(/^### (.*$)/gm, '<h3 style="color:var(--text-bright);font-size:13px;margin:8px 0 4px;font-family:var(--mono)">$1</h3>')
+    .replace(/^## (.*$)/gm, '<h2 style="color:var(--accent);font-size:14px;margin:10px 0 6px;font-family:var(--mono)">$1</h2>')
+    .replace(/^# (.*$)/gm, '<h1 style="color:var(--accent);font-size:16px;margin:10px 0 8px;font-family:var(--mono)">$1</h1>')
+    .replace(/^[-•] (.+)$/gm, '<div style="display:flex;gap:6px;margin:2px 0"><span style="color:var(--accent3)">▸</span><span>$1</span></div>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+}
+ 
+function quickPrompt(text) {
+  document.getElementById('chat-input').value = text;
+  autoResize(document.getElementById('chat-input'));
+  document.getElementById('chat-input').focus();
+  // Place cursor at end if text ends with space (for completion)
+  if (text.endsWith(' ')) {
+    const el = document.getElementById('chat-input');
+    el.setSelectionRange(el.value.length, el.value.length);
+  }
+}
+ 
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+ 
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+ 
+function clearMemoryUI() {
+  conversationHistory = [];
+  const area = document.getElementById('chat-area');
+  area.innerHTML = `
+    <div class="welcome" id="welcome-screen">
+      <div class="welcome-mark">ALF</div>
+      <h1>ALFIUS</h1>
+      <p>Chat cleared. Memory is still intact — Alfius still knows your facts and history.</p>
+    </div>
+  `;
+}
 </script>
 </body>
 </html>
+ 
